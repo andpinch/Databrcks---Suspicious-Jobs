@@ -12,7 +12,7 @@ from dags.nas_high_frequency_jobs.lib.databricks_analyzer import DatabricksAnaly
 
 default_args = {
     'owner': 'Airflow',
-    'email': 'pinchuk.a@pg.com',
+    'email': '',
     'depends_on_past': False,
     'catchup': False,
     'email_on_failure': False,
@@ -21,20 +21,20 @@ default_args = {
 }
 
 dag = DAG(
-    dag_id='NAS_HIGH_FREQUENCY_JOBS',
+    dag_id='SUSPICIOUS_JOBS',
     start_date=airflow.utils.dates.days_ago(1),
     schedule_interval=None,
     default_args=default_args,
     concurrency=1,
 )
 
-variables = "NAS_HIGH_FREQUENCY_JOBS"
+variables = "SUSPICIOUS_JOBS"
 dag_config_json = Variable.get(variables, deserialize_json=True)
 
-user_email = dag_config_json['user'] + "@pg.com"
+user_email = dag_config_json['user'] + "@.com"
 email_recipients = dag_config_json["emailRecipients"]
 email_recipients.append(user_email)
-sender_email = 'neighborhood.im@pg.com'
+sender_email = ''
 
 def detect_suspicious_jobs(**kwargs):
     databricks_connection = BaseHook.get_connection(dag_config_json["databricksConnId"])
@@ -69,7 +69,7 @@ def send_email(**kwargs):
 
     email_body_content = analyzer.compose_email_body(exceeded_duration, frequent_job_runs)
 
-    subject_template = 'NAS_HIGH_FREQUENCY_JOBS has been done.'
+    subject_template = 'SUSPICIOUS_JOBS has been done.'
     html_content_template = """
         <p>Job Runs Exceeding Duration:</p>
         <pre>{{ exceeded_duration }}</pre>
@@ -83,7 +83,7 @@ def send_email(**kwargs):
 send_email_success_task = EmailOperator(
     task_id="send_email_success",
     to=email_recipients,
-    subject=f"NAS_HIGH_FREQUENCY_JOBS has been done",
+    subject=f"SUSPICIOUS_JOBS has been done",
     html_content="",
     trigger_rule="all_success"
 )
@@ -91,7 +91,7 @@ send_email_success_task = EmailOperator(
 send_email_failure_task = EmailOperator(
     task_id="send_email_failure",
     to=email_recipients,
-    subject=f"NAS_HIGH_FREQUENCY_JOBS has failed",
+    subject=f"SUSPICIOUS_JOBS has failed",
     html_content="",
     trigger_rule="one_failed"
 )
@@ -109,7 +109,7 @@ with dag:
     send_email_task = EmailOperator(
         task_id='send_email',
         to=email_recipients,
-        subject="NAS_HIGH_FREQUENCY_JOBS has been done",
+        subject="SUSPICIOUS_JOBS has been done",
         html_content="<pre>{{ ti.xcom_pull(task_ids='detect_suspicious_jobs', key='email_body_content') }}</pre>",
         trigger_rule="all_success"
     )
