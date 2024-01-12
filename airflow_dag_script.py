@@ -8,7 +8,7 @@ from airflow.utils.trigger_rule import TriggerRule
 from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Dict, List, Mapping, Union
-from dags.nas_high_frequency_jobs.lib.databricks_analyzer import DatabricksAnalyzer
+from dags.databricks_suspicious_jobs.lib.databricks_analyzer import DatabricksAnalyzer
 
 default_args = {
     'owner': 'Airflow',
